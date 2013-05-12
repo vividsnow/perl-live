@@ -1,6 +1,7 @@
-use v5.16;
+use v5.12;
+use warnings;
 use AnyEvent;
-my $w = AE::io *STDIN, 0, sub {
+my $w = AE::io *STDIN, 0, sub { 
     state $buf;
     if (eof()) {
         eval $buf; warn if $@;
