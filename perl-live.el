@@ -10,6 +10,9 @@
   "path to script for live coding"
   :group 'perl-live
   :type 'string)
+(defcustom perl-live-switches "-g" "live script switches" ; -g for globalize context
+  :group 'perl-live
+  :type 'string)
 
 (defconst perl-live-name "perl live" "name for process and buffer")
 
@@ -23,6 +26,9 @@
 (defun perl-live-eval-line () "eval line" (interactive)
   (save-excursion ((lambda (p) (perl-live-eval-region (car p) (cdr p))) (bounds-of-thing-at-point 'line)))
   (forward-line))
+(defun perl-live-eval-region-or-line () "eval line or region" (interactive)
+  (if (and transient-mark-mode mark-active)
+      (perl-live-eval-region (region-beginning) (region-end)) (perl-live-eval-line)))
 (defun perl-live-eval-sexp () "eval between braces" (interactive)
   (save-excursion ((lambda (p) (perl-live-eval-region (+ 1 (car p)) (- (cdr p) 1))) (bounds-of-thing-at-point 'sexp))))
 
@@ -31,7 +37,7 @@
       (message "already run")
     (if (featurep 'comint)
         (progn
-          (make-comint perl-live-name perl-live-bin perl-live-script)
+          (make-comint perl-live-name perl-live-bin nil perl-live-script perl-live-switches)
           (with-current-buffer (format "*%s*" perl-live-name)
             (mapcar (lambda (v) (set (make-local-variable v) 't))
              (list 'ansi-color-for-comint-mode
@@ -42,9 +48,8 @@
                  '(lambda (proc string)
                     (comint-send-string proc (format "%s\n" string))
                     (process-send-eof proc)))))
-      (start-process perl-live-name (format "*%s*" perl-live-name) perl-live-bin perl-live-script))
-    (message (format "check output at *%s* buffer" perl-live-name))
-    (process-send-eof perl-live-name)))
+      (start-process perl-live-name (format "*%s*" perl-live-name) perl-live-bin perl-live-script perl-live-switches))
+    (message (format "check output at *%s* buffer" perl-live-name))))
 
 (defun perl-live-stop () "stop perl-live session" (interactive)
   (delete-process perl-live-name)
@@ -56,8 +61,7 @@
 
 (if (featurep 'cperl-mode)
     (progn
-      (cperl-define-key "\C-c\C-r" 'perl-live-eval-region)
-      (cperl-define-key "\C-c\C-c" 'perl-live-eval-line)
+      (cperl-define-key "\C-c\C-c" 'perl-live-eval-region-or-line)
       (cperl-define-key "\C-\M-x" 'perl-live-eval-sexp)
       (cperl-define-key "\C-c\C-l" 'perl-live-run)
       (cperl-define-key "\C-c\C-p" 'perl-live-stop)))
