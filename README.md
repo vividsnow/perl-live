@@ -35,7 +35,7 @@ By default `my` declarations at top level are converted to globals.
 ### perl
 
  * 5.12 (modify `perl-live.pl` for earlier versions)
- * [AnyEvent](http://metacpan.org/release/AnyEvent)
+ * [AnyEvent](http://metacpan.org/release/AnyEvent) + [EV](http://metacpan.org/release/EV) 
  * [PadWalker](http://metacpan.org/release/PadWalker)
  * [Package::Stash::XS](https://metacpan.org/release/Package-Stash-XS)
 
@@ -49,3 +49,9 @@ sample `cperl-mode` indentation config:
     cperl-indent-level 4 cperl-indent-parens-as-block t
     cperl-tabs-always-indent t cperl-indent-subs-specially nil)
 ```
+
+----------------
+
+#### elsewhere
+
+ * [blog post w/ demo screencast](http://blogs.perl.org/users/egor/2013/05/perl-live-coding.html)
