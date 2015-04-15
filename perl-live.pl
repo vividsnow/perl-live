@@ -16,11 +16,10 @@ use AnyEvent;
 $z::w = AE::io *STDIN, 0, sub {
     if (eof()) {
         scalar <>;
-        BEGIN { ($^H,${^WARNING_BITS},%^H) = @{$z::hint} if $z::hint }
         eval 'BEGIN { ($^H,${^WARNING_BITS},%^H) = @{$z::hint} if $z::hint }'
              .decode_utf8(substr($z::buf, 0, length $z::buf, ''))
              .'; package main; $z::ctx = peek_my(0);'
-             .'BEGIN { $z::hint = [$^H, ${^WARNING_BITS}, %^H] }';
+             .'BEGIN { $z::hint = [$^H,${^WARNING_BITS},%^H] }';
         map $z::st->add_symbol($_, $z::ctx->{$_}), keys%$z::ctx if $z::in->{g};
         warn if $@ }
     else { $z::buf .= scalar <> } };
