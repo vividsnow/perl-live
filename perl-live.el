@@ -1,3 +1,4 @@
+(require 'comint)
 (require 'ansi-color)
 
 (defcustom perl-live-bin
