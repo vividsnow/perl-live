@@ -62,9 +62,9 @@
 
 (if (featurep 'cperl-mode)
     (progn
-      (cperl-define-key "\C-c\C-c" 'perl-live-eval-region-or-line)
-      (cperl-define-key "\C-\M-x" 'perl-live-eval-sexp)
-      (cperl-define-key "\C-c\C-l" 'perl-live-run)
-      (cperl-define-key "\C-c\C-p" 'perl-live-stop)))
+      (define-key cperl-mode-map "\C-c\C-c" 'perl-live-eval-region-or-line)
+      (define-key cperl-mode-map "\C-\M-x" 'perl-live-eval-sexp)
+      (define-key cperl-mode-map "\C-c\C-l" 'perl-live-run)
+      (define-key cperl-mode-map "\C-c\C-p" 'perl-live-stop)))
 
 (provide 'perl-live)
