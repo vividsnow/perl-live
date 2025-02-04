@@ -90,11 +90,11 @@
         (progn
           (make-comint perl-live-name perl-live-bin nil perl-live-script perl-live-switches)
           (with-current-buffer (format "*%s*" perl-live-name)
-            (mapcar (lambda (v) (set (make-local-variable v) 't))
-                    (list 'ansi-color-for-comint-mode
-                          'comint-scroll-to-bottom-on-input
-                          'comint-scroll-to-bottom-on-output
-                          'comint-move-point-for-output))
+            (mapc (lambda (v) (set (make-local-variable v) 't))
+                  (list 'ansi-color-for-comint-mode
+                        'comint-scroll-to-bottom-on-input
+                        'comint-scroll-to-bottom-on-output
+                        'comint-move-point-for-output))
             (set (make-local-variable 'comint-input-sender)
                  '(lambda (proc string)
                     (comint-send-string proc (format "%s\n" string))
