@@ -37,7 +37,7 @@ By default `my` declarations at top level are converted to globals. Evaluating o
  * > 5.12 (not tested on earlier versions)
  * [AnyEvent](http://metacpan.org/release/AnyEvent) + optionally [EV](http://metacpan.org/release/EV)
  * [PadWalker](http://metacpan.org/release/PadWalker)
- * [Package::Stash::XS](https://metacpan.org/release/Package-Stash-XS)
+ * [Package::Stash::XS](https://metacpan.org/release/Package-Stash-XS), which requires [Package::Stash](https://metacpan.org/pod/Package::Stash)
 
 ### emacs
 
