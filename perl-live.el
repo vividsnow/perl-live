@@ -23,6 +23,12 @@
 (require 'comint)
 (require 'ansi-color)
 
+(defgroup perl-live nil
+  "Perl Live Coding."
+  :link '(url-link :tag "perl live coding @ Github"
+		           "https://github.com/vividsnow/perl-live")
+  :group 'perl)
+
 (defcustom perl-live-bin (if (and (featurep 'perlenv)
                                   (fboundp 'perlenv-get-perl-path))
                              (perlenv-get-perl-path)
