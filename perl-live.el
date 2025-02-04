@@ -1,3 +1,5 @@
+;;; perl-live.el --- Live Perl Coding -*-lexical-binding: t; -*-
+
 (require 'comint)
 (require 'ansi-color)
 
