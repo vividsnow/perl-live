@@ -23,7 +23,10 @@
 (require 'comint)
 (require 'ansi-color)
 
-(defcustom perl-live-bin (if (featurep 'perlenv) (perlenv-get-perl-path) "perl")
+(defcustom perl-live-bin (if (and (featurep 'perlenv)
+                                  (fboundp 'perlenv-get-perl-path))
+                             (perlenv-get-perl-path)
+                           "perl")
   "Path to perl binary, use perlenv by default."
   :group 'perl-live
   :type 'string)
@@ -113,7 +116,8 @@
   (perl-live-run))
 
 
-(if (featurep 'cperl-mode)
+(if (and (featurep 'cperl-mode)
+         (boundp 'cperl-mode-map))
     (progn
       (define-key cperl-mode-map "\C-c\C-c" 'perl-live-eval-region-or-line)
       (define-key cperl-mode-map "\C-\M-x" 'perl-live-eval-sexp)
