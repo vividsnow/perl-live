@@ -1,6 +1,6 @@
 ;;; perl-live.el --- Live Perl Coding -*-lexical-binding: t; -*-
 
-;;  Author: vividsnow.tumblr.com
+;;  Author: vividsnow
 ;;  Recent updates: Pierre Rouleau
 
 ;; This file is not part of GNU Emacs.
