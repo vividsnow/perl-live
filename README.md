@@ -1,66 +1,98 @@
-# perl live coding
+# Perl live coding
 
-## usage
+Evaluate Perl from Emacs in a persistent interpreter, with a separate session
+and REPL for each project.
 
-```lisp
-; put perl-live.el and perl-live.pl in `/path/to/somewhere`
-(add-to-list 'load-path "/path/to/somewhere")
+## Install
+
+Requires Perl 5.22+ and Emacs 28.1+. Install the Perl dependencies:
+
+```sh
+cpanm --installdeps .
+```
+
+Dependencies: AnyEvent, PadWalker, Package::Stash, and JSON::PP. EV and
+Package::Stash::XS are optional accelerators.
+
+Keep `perl-live.el` and `perl-live.pl` together and add this to your Emacs config:
+
+```elisp
+(add-to-list 'load-path "/path/to/perl-live")
 (require 'perl-live)
+(add-hook 'cperl-mode-hook #'perl-live-mode)
+(add-hook 'perl-mode-hook #'perl-live-mode)
 ```
 
-Create `cperl-mode` buffer and use these keybindings:
+Or enable `M-x perl-live-mode` in a single buffer.
 
- * "C-c C-l" - start live perl session
- * "C-c C-p" - stop it
- * "C-c C-c" - eval current line or region
- * "C-M-x" - eval everything between matching braces
+## Use
 
-Open `*perl live*` buffer in other frame/window to check output. Also, use `*perl live*` as REPL ([comint-mode](http://www.emacswiki.org/emacs/ComintMode)).
+| Key | Action |
+| --- | --- |
+| `C-c C-l` | Start or show the session |
+| `C-c C-p` | Stop |
+| `C-c C-r` | Restart |
+| `C-c C-k` | Interrupt evaluation |
+| `C-c C-z` | Switch to the REPL |
+| `C-c C-c` | Evaluate the current line or active region |
+| `C-M-x` | Evaluate inside the braces enclosing point |
 
-In order to have persistent variables between evals without magic, declare them using `use vars qw($one @two %three)` or
-use main package vars like: `$'somevar` or `$::somevar` or create other package on-the-fly.
-Modify `perl-live.pl` if you want to preload other modules or predeclare context lexicals using `my/state`.
-By default `my` declarations at top level are converted to globals. Evaluating of 'use some_pragma' persists.
+Evaluation starts a session when needed. Top-level `my` declarations become
+package variables, so later evaluations can reuse them. Lexical pragmas persist;
+default features are enabled when supported by the running Perl. Input and output
+use UTF-8.
 
-## customize
+Evaluate these lines separately:
 
-```lisp
-(defvar perl-live-bin "/path/to/perl") ; path to perl binary - default: "perl" or `perlenv-get-perl-path` if `perlenv.el` loaded
-(defvar perl-live-script "/path/to/perl-live.pl") ; path to interpreter script - default: "perl-live.pl" at same dir where you put perl-live.el
-(defvar perl-live-switches "/path/to/perl-live.pl") ; default: "-g" - make "my" global
+```perl
+my $answer = 41;
+say ++$answer; # 42
 ```
 
-## requirements
+In the REPL, Return evaluates input, `M-p` / `M-n` browse history, and `C-c C-c`
+interrupts evaluation. Interrupting keeps existing variables; declarations in an
+unfinished evaluation are not exported. Restarting clears the session.
 
-### perl
+Errors retain source filenames and line numbers. Click an error or use
+`M-g n` / `M-g p` to visit it. Save source buffers for file navigation.
 
- * > 5.12 (not tested on earlier versions)
- * [AnyEvent](http://metacpan.org/release/AnyEvent) + optionally [EV](http://metacpan.org/release/EV)
- * [PadWalker](http://metacpan.org/release/PadWalker)
- * [Package::Stash::XS](https://metacpan.org/release/Package-Stash-XS), which requires [Package::Stash](https://metacpan.org/pod/Package::Stash)
+## Configure
 
-### emacs
+Sessions use the Emacs project root, an enclosing `cpanfile` directory, or the
+current directory. Set `perl-live-project-directory` to override detection.
 
- * [cperl-mode](https://github.com/jrockway/cperl-mode) for predefined keybindings:
+Use `M-x customize-group RET perl-live RET` for options. `perl-live-bin` selects
+the interpreter; when it is `"perl"`, an already loaded `perlenv` selects it in the
+project directory. Set `perl-live-switches` to `""` to disable variable export.
 
-sample `cperl-mode` indentation config:
-```lisp
-(setq cperl-close-paren-offset -4 cperl-continued-statement-offset 4
-    cperl-indent-level 4 cperl-indent-parens-as-block t
-    cperl-tabs-always-indent t cperl-indent-subs-specially nil)
+Directory-local variables can configure each project, for example in `.dir-locals.el`:
+
+```elisp
+((nil . ((perl-live-bin . "/path/to/project/perl")
+         (perl-live-switches . "-g"))))
 ```
 
-### usage without emacs
+Restart after changing the interpreter or switches. REPL commands retain the
+settings used to start the session. Startup errors appear in its buffer.
 
-```bash
-~$ perl perl-live.pl -g # run
-# enter perl code
-# hit Ctrl+D on a new line to evaluate
-#     Ctrl+C to interrupt
+## Without Emacs
+
+```sh
+perl perl-live.pl -g
 ```
 
-----------------
+Enter Perl, then press Ctrl+D on a new line to evaluate. Ctrl+C interrupts an
+evaluation; `exit;` ends the session. Piped input evaluates at EOF and exits.
 
-#### elsewhere
+## Develop
 
- * [blog post w/ demo screencast](http://blogs.perl.org/users/egor/2013/05/perl-live-coding.html)
+```sh
+perl test/check.pl
+```
+
+Runs syntax checks, Perl and Emacs tests, and Elisp byte compilation. Uses the
+current Perl; set `EMACS` to select Emacs. Set `PERL_ANYEVENT_MODEL` to `Perl` or
+`EV` to select a backend. CI covers both on Perl 5.22, 5.40, and 5.42, with Emacs
+28.2 and 30.2.
+
+[Original demo](http://blogs.perl.org/users/egor/2013/05/perl-live-coding.html).
