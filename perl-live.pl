@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 use utf8;
 use strict;
 use warnings;
@@ -13,94 +14,94 @@ use PadWalker 'peek_my';
 use Package::Stash ();
 use AnyEvent;
 
-$z::st = Package::Stash->new('main');
-$z::in = {};
-getopts('gpj', $z::in) or die "Usage: perl perl-live.pl [-g] [-p|-j]\n";
+$λ::st = Package::Stash->new('main');
+$λ::in = {};
+getopts('gpj', $λ::in) or die "Usage: perl perl-live.pl [-g] [-p|-j]\n";
 binmode STDIN, ':raw';
 binmode STDOUT, ':encoding(UTF-8)';
 binmode STDERR, ':encoding(UTF-8)';
 $| = 1;
-$z::buf = '';
-$z::cv = AE::cv;
-$z::status = 0;
-$z::files = {};
-$z::file_id = 0;
+$λ::buf = '';
+$λ::cv = AE::cv;
+$λ::status = 0;
+$λ::files = {};
+$λ::file_id = 0;
 $SIG{INT} = sub { }; # Keep idle sessions alive.
-$SIG{__WARN__} = sub { warn z::diagnostic($_[0]) };
+$SIG{__WARN__} = sub { warn λ::diagnostic($_[0]) };
 
-sub z::diagnostic {
+sub λ::diagnostic {
     my $message = $_[0];
-    for my $file (keys %{$z::files}) {
-        my $original = $z::files->{$file};
+    for my $file (keys %{$λ::files}) {
+        my $original = $λ::files->{$file};
         $message =~ s/( at )\Q$file\E( line [0-9]+)/$1$original$2/g;
     }
     return $message;
 }
 
 # Keep evaluator internals out of the lexical pad exported by peek_my.
-sub z::eval_code {
-    $z::ctx = {};
-    $z::source_file = $_[1] // '(perl live)';
-    $z::file = $z::source_file;
+sub λ::eval_code {
+    $λ::ctx = {};
+    $λ::source_file = $_[1] // '(perl live)';
+    $λ::file = $λ::source_file;
     # Alias filenames that cannot be represented in a #line directive.
-    if ($z::file =~ /[\r\n]/ || ($z::file =~ /"/ && $z::file =~ /(?:\A"|\s)/)) {
-        $z::file = '(perl-live source '.++$z::file_id.')';
+    if ($λ::file =~ /[\r\n]/ || ($λ::file =~ /"/ && $λ::file =~ /(?:\A"|\s)/)) {
+        $λ::file = '(perl-live source '.++$λ::file_id.')';
     }
-    $z::files->{Encode::encode_utf8($z::file)} = $z::source_file;
-    $z::directive_file = $z::file =~ /"/ ? $z::file : qq("$z::file");
+    $λ::files->{Encode::encode_utf8($λ::file)} = $λ::source_file;
+    $λ::directive_file = $λ::file =~ /"/ ? $λ::file : qq("$λ::file");
     {
         local $SIG{INT} = sub { die "Evaluation interrupted\n" };
-        eval 'BEGIN { ($^H,${^WARNING_BITS},%^H) = @{$z::hint} if $z::hint }'
-             ."\n#line ".($_[2] // 1)." $z::directive_file\n"
+        eval 'BEGIN { ($^H,${^WARNING_BITS},%^H) = @{$λ::hint} if $λ::hint }'
+             ."\n#line ".($_[2] // 1)." $λ::directive_file\n"
              .$_[0]
-             ."\n; package main; \$z::ctx = peek_my(0);"
-             .'BEGIN { $z::hint = [$^H,${^WARNING_BITS},%^H] }';
-        $z::error = $@;
+             ."\n; package main; \$λ::ctx = peek_my(0);"
+             .'BEGIN { $λ::hint = [$^H,${^WARNING_BITS},%^H] }';
+        $λ::error = $@;
     }
-    if ($z::in->{g}) {
-        $z::st->add_symbol($_, $z::ctx->{$_}) for keys %{$z::ctx};
+    if ($λ::in->{g}) {
+        $λ::st->add_symbol($_, $λ::ctx->{$_}) for keys %{$λ::ctx};
     }
-    warn $z::error if length $z::error;
+    warn $λ::error if length $λ::error;
 }
 
-sub z::finish {
+sub λ::finish {
     if (@_) {
         warn $_[0];
-        $z::status = 1;
+        $λ::status = 1;
     }
-    undef $z::w;
-    $z::cv->send;
+    undef $λ::w;
+    $λ::cv->send;
 }
 
-$z::w = AE::io *STDIN, 0, sub {
-    if ($z::in->{p} || $z::in->{j}) {
+$λ::w = AE::io *STDIN, 0, sub {
+    if ($λ::in->{p} || $λ::in->{j}) {
         # Length-prefixed UTF-8 source (-p) or JSON metadata (-j).
         my $read = sysread STDIN, my $chunk, 65536;
         if (!defined $read) {
             return if $!{EINTR} || $!{EAGAIN};
-            z::finish("Cannot read input: $!\n");
+            λ::finish("Cannot read input: $!\n");
             return;
         }
         if (!$read) {
-            z::finish(defined $z::size || length $z::buf
+            λ::finish(defined $λ::size || length $λ::buf
                       ? "Incomplete evaluation frame\n" : ());
             return;
         }
-        $z::buf .= $chunk;
+        $λ::buf .= $chunk;
         while (1) {
-            unless (defined $z::size) {
-                my $newline = index $z::buf, "\n";
+            unless (defined $λ::size) {
+                my $newline = index $λ::buf, "\n";
                 last if $newline < 0;
-                my $header = substr $z::buf, 0, $newline + 1, '';
+                my $header = substr $λ::buf, 0, $newline + 1, '';
                 unless ($header =~ /\A([0-9]+)\n\z/) {
-                    z::finish("Invalid evaluation frame\n");
+                    λ::finish("Invalid evaluation frame\n");
                     return;
                 }
-                $z::size = 0 + $1;
+                $λ::size = 0 + $1;
             }
-            last if length $z::buf < $z::size;
-            my $payload = substr $z::buf, 0, $z::size, '';
-            if ($z::in->{j}) {
+            last if length $λ::buf < $λ::size;
+            my $payload = substr $λ::buf, 0, $λ::size, '';
+            if ($λ::in->{j}) {
                 my $request = eval { decode_json($payload) };
                 if ($@ || ref($request) ne 'HASH'
                     || !defined($request->{code}) || ref($request->{code})
@@ -109,26 +110,26 @@ $z::w = AE::io *STDIN, 0, sub {
                     || (exists($request->{line})
                         && (!defined($request->{line}) || ref($request->{line})
                             || $request->{line} !~ /\A[1-9][0-9]*\z/))) {
-                    z::finish("Invalid evaluation request\n");
+                    λ::finish("Invalid evaluation request\n");
                     return;
                 }
-                z::eval_code($request->{code}, $request->{file}, $request->{line});
+                λ::eval_code($request->{code}, $request->{file}, $request->{line});
             }
-            else { z::eval_code(decode_utf8($payload)) }
-            undef $z::size;
+            else { λ::eval_code(decode_utf8($payload)) }
+            undef $λ::size;
         }
     }
     elsif (eof(STDIN)) {
         STDIN->clearerr if -t STDIN;
-        z::eval_code(decode_utf8(substr $z::buf, 0, length $z::buf, ''));
-        z::finish() unless -t STDIN;
+        λ::eval_code(decode_utf8(substr $λ::buf, 0, length $λ::buf, ''));
+        λ::finish() unless -t STDIN;
     }
     else {
         my $line = <STDIN>;
-        $z::buf .= $line if defined $line;
+        $λ::buf .= $line if defined $line;
     }
 };
 
-print "PERL-LIVE READY 1\n" if $z::in->{j};
-$z::cv->recv;
-exit $z::status;
+print "PERL-LIVE READY 1\n" if $λ::in->{j};
+$λ::cv->recv;
+exit $λ::status;

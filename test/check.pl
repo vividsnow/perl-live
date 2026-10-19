@@ -20,6 +20,8 @@ chdir $root or die "Cannot enter $root: $!";
 run($^X, '-MAnyEvent', '-MPadWalker', '-MPackage::Stash', '-MJSON::PP',
     '-e', 'printf "Perl %s; backend %s\n", $^V, AnyEvent::detect();');
 run($^X, '-c', "$root/perl-live.pl");
+run($^X, '-c', "$root/perl-live-mcp.pl");
+run($^X, '-Ilib', '-c', "$root/lib/AnyEvent/App/PerlLive.pm");
 run($^X, '-MTest::Harness=runtests', '-e', 'runtests(@ARGV);', glob 'test/*.t');
 run($emacs, '--batch', '-Q', '-l', "$root/test/perl-live-tests.el",
     '-f', 'ert-run-tests-batch-and-exit');

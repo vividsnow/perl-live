@@ -1,0 +1,9 @@
+Revision history for AnyEvent-App-PerlLive
+
+0.01  2026-10-19
+ - Initial CPAN release.
+ - Persistent project-based Perl evaluation server.
+ - Stream-framed UTF-8 protocol and JSON metadata protocol support.
+ - Integration with AnyEvent (EV, Event, Perl event loops).
+ - Model Context Protocol (MCP) server (perl-live-mcp.pl) for AI assistants.
+ - Companion package for Emacs perl-live.el.

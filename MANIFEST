@@ -1,0 +1,13 @@
+Changes
+cpanfile
+lib/AnyEvent/App/PerlLive.pm
+LICENSE
+Makefile.PL
+MANIFEST			This list of files
+MANIFEST.SKIP
+perl-live-mcp.pl
+perl-live.pl
+README.md
+test/check.pl
+test/mcp.t
+test/protocol.t

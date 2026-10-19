@@ -5,7 +5,33 @@ and REPL for each project.
 
 ## Install
 
-Requires Perl 5.22+ and Emacs 28.1+. Install the Perl dependencies:
+Requires Perl 5.22+ and Emacs 28.1+.
+
+### From MELPA (Emacs)
+
+Install `perl-live` via `package.el`:
+
+```text
+M-x package-install RET perl-live RET
+```
+
+And add to your Emacs config:
+
+```elisp
+(require 'perl-live)
+(add-hook 'cperl-mode-hook #'perl-live-mode)
+(add-hook 'perl-mode-hook #'perl-live-mode)
+```
+
+### From CPAN (Perl CLI)
+
+```sh
+cpanm AnyEvent::App::PerlLive
+```
+
+### From Source
+
+Install the Perl dependencies:
 
 ```sh
 cpanm --installdeps .
@@ -83,6 +109,24 @@ perl perl-live.pl -g
 
 Enter Perl, then press Ctrl+D on a new line to evaluate. Ctrl+C interrupts an
 evaluation; `exit;` ends the session. Piped input evaluates at EOF and exits.
+
+## AI Assistant (MCP Server)
+
+`perl-live` includes a Model Context Protocol (MCP) server for Claude Desktop,
+Antigravity, Cursor, and other AI coding assistants:
+
+```json
+{
+  "mcpServers": {
+    "perl-live": {
+      "command": "perl-live-mcp.pl"
+    }
+  }
+}
+```
+
+Provides live evaluation tools (`perl_live_eval`, `perl_live_status`, `perl_live_restart`)
+allowing AI assistants to test expressions and inspect state in a persistent session.
 
 ## Develop
 
