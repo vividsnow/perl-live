@@ -33,4 +33,9 @@ run($emacs, '--batch', '-Q', '--eval',
     .' (let ((byte-compile-error-on-warn t)'
     .'       (byte-compile-dest-file-function (lambda (_) '.$compiled.')))'
     .'   (unless (byte-compile-file '.$source.') (kill-emacs 1))))');
+run($emacs, '--batch', '-Q', '-l', "$root/perl-live.el", '-l', 'checkdoc', '--eval',
+    '(progn (checkdoc-file '.$source.')'
+    .' (when (get-buffer "*Warnings*")'
+    .'   (with-current-buffer "*Warnings*" (princ (buffer-string)))'
+    .'   (kill-emacs 1)))');
 print "All checks passed.\n";

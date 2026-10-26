@@ -1,7 +1,8 @@
 ;;; perl-live.el --- Evaluate Perl in persistent project sessions -*- lexical-binding: t; -*-
 
-;; Author: vividsnow
+;; Author: vividsnow <https://github.com/vividsnow>
 ;; Contributors: Pierre Rouleau
+;; URL: https://github.com/vividsnow/perl-live
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 ;; Version: 0.2.0
 ;; Package-Requires: ((emacs "28.1"))
@@ -19,8 +20,6 @@
 (require 'json)
 (require 'project)
 (require 'subr-x)
-
-(declare-function perlenv-get-perl-path "perlenv")
 
 (defgroup perl-live nil
   "Evaluate Perl code in persistent project sessions."
@@ -54,8 +53,8 @@ The default -g exports top-level lexical variables as package variables."
 Detection uses the project root, an enclosing cpanfile directory, or the
 current directory."
   :group 'perl-live
-  :type '(choice (const :tag "Detect automatically" nil) directory))
-(make-variable-buffer-local 'perl-live-project-directory)
+  :type '(choice (const :tag "Detect automatically" nil) directory)
+  :local t)
 
 (defcustom perl-live-startup-timeout 5
   "Seconds to wait for an interpreter to report that it is ready."
@@ -164,6 +163,13 @@ When START is non-nil, start a missing session."
       (remhash perl-live--session-root perl-live--sessions))
     (delete-process process)))
 
+(defvar perl-live-repl-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c C-c") #'perl-live-interrupt)
+    (define-key map (kbd "C-c C-k") #'perl-live-interrupt)
+    map)
+  "Keymap for `perl-live-repl-mode'.")
+
 (define-derived-mode perl-live-repl-mode comint-mode "Perl Live"
   "Comint mode for a persistent Perl interpreter."
   (setq-local comint-input-sender #'perl-live--send-input
@@ -175,9 +181,6 @@ When START is non-nil, start a missing session."
   (setq-local compilation-error-regexp-alist '(perl-live))
   (add-hook 'kill-buffer-hook #'perl-live--kill-session nil t))
 
-(define-key perl-live-repl-mode-map (kbd "C-c C-c") #'perl-live-interrupt)
-(define-key perl-live-repl-mode-map (kbd "C-c C-k") #'perl-live-interrupt)
-
 ;;;###autoload
 (defun perl-live-run ()
   "Start or reuse the current project's interpreter and return its process."
@@ -187,7 +190,6 @@ When START is non-nil, start a missing session."
          (process (gethash root perl-live--sessions)))
     (unless (and process (process-live-p process))
       (let* ((requested-bin (if (and (equal perl-live-bin "perl")
-                                     (featurep 'perlenv)
                                      (fboundp 'perlenv-get-perl-path))
                                 (perlenv-get-perl-path)
                               perl-live-bin))
@@ -336,7 +338,7 @@ FILE and LINE identify the source location used in diagnostics."
     (define-key map (kbd "C-c C-c") #'perl-live-eval-region-or-line)
     (define-key map (kbd "C-M-x") #'perl-live-eval-sexp)
     map)
-  "Keymap for perl-live-mode.")
+  "Keymap for `perl-live-mode'.")
 
 ;;;###autoload
 (define-minor-mode perl-live-mode

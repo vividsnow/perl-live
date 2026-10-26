@@ -79,7 +79,12 @@
       (should (eq (key-binding (kbd "C-M-x")) #'perl-live-eval-sexp))
       (should (eq (key-binding (kbd "C-c C-k")) #'perl-live-interrupt))
       (perl-live-mode -1)
-      (should (eq (key-binding (kbd "C-c C-c")) original)))))
+      (should (eq (key-binding (kbd "C-c C-c")) original))))
+  (with-temp-buffer
+    (perl-live-repl-mode)
+    (should (eq (key-binding (kbd "C-c C-c")) #'perl-live-interrupt))
+    (should (eq (key-binding (kbd "C-c C-k")) #'perl-live-interrupt))
+    (should (eq (key-binding (kbd "RET")) #'comint-send-input))))
 
 (ert-deftest perl-live-repeated-evaluations-and-globals ()
   (perl-live-test--with-project
